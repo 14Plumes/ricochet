@@ -1,0 +1,47 @@
+{
+  "name": "ricochet",
+  "description": "Ricochet",
+  "version": "0.0.1",
+  "main": "build/js/app.min.js",
+  "scripts": {
+    "start": "./node_modules/.bin/grunt",
+    "lint": "./node_modules/.bin/eslint ./src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:14Plumes/ld38.git"
+  },
+  "browserify-shim": {
+    "./src/js/lib/stats.min.js": "Stats"
+  },
+  "dependencies": {
+    "lodash": "^4.6.1",
+    "phaser": "^2.6.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^7.3.0",
+    "browserify": "^13.3.0",
+    "browserify-shim": "^3.8.12",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.3",
+    "grunt": "^1.0.0",
+    "grunt-browserify": "^5.0.0",
+    "grunt-cache-bust": "^1.1.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-compress": "^1.1.1",
+    "grunt-contrib-connect": "^1.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-jade": "^1.0.0",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-stylus": "^1.2.0",
+    "grunt-contrib-uglify": "^1.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-open": "^0.2.3",
+    "grunt-pngmin": "^1.0.2"
+  }
+}
