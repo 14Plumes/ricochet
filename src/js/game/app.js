@@ -2,12 +2,12 @@ const _ = require('lodash');
 const properties = require('./properties');
 const boot = require('./states/boot.js');
 const preloader = require('./states/preloader.js');
-const game = require('./states/game.js');
+const play = require('./states/play.js');
 
 const states = {
     boot,
     preloader,
-    game,
+    play,
 };
 
 const gameInstance = new Phaser.Game(properties.size.x, properties.size.y, Phaser.AUTO, 'game');
