@@ -21,12 +21,21 @@ function createDisc(game) {
     return disc;
 }
 
+function createSky(game, height) {
+    const sky = game.add.tileSprite(0, height - 172, game.world.width, 172, 'sky');
+    sky.scale.setTo(2, 2);
+    game.stage.backgroundColor = '#0098f8';
+    return sky;
+}
+
 play.create = function create() {
     this.game.stage.backgroundColor = '#eeeeee';
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
     this.game.physics.arcade.gravity.y = 200;
 
+    this.sky = createSky(this.game, this.game.height - 70);
     this.water = createWater(this.game);
+
     this.disc = createDisc(this.game);
 };
 
@@ -35,8 +44,8 @@ play.update = function update() {
 };
 
 play.render = function render() {
-    this.game.debug.body(this.disc);
-    this.game.debug.body(this.water);
+    // this.game.debug.body(this.disc);
+    // this.game.debug.body(this.water);
 };
 
 module.exports = play;
