@@ -4,6 +4,9 @@ function createWater(game, height) {
     const water = game.add.tileSprite(0, height - 128, game.world.width, 128, 'water');
 
     game.physics.arcade.enable([water]);
+    // With the current texture (view angle),
+    // the point of contact is somewhere in the middle
+    water.body.setSize(water.width, water.height * 0.6, 0, water.height * 0.4);
     water.body.allowGravity = false;
     water.body.immovable = true;
 
@@ -54,12 +57,14 @@ play.create = function create() {
 play.update = function update() {
     const { disc, water, sky, game } = this;
     game.physics.arcade.collide(disc, water);
+
     handleInput(game, sky, water);
 };
 
 play.render = function render() {
-    // this.game.debug.body(this.disc);
-    // this.game.debug.body(this.water);
+    const { disc, water, game } = this;
+    // game.debug.body(disc);
+    // game.debug.body(water);
 };
 
 module.exports = play;
