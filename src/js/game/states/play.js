@@ -1,3 +1,4 @@
+const properties = require('../properties');
 const play = {};
 
 function createWater(game, height) {
@@ -14,7 +15,7 @@ function createWater(game, height) {
 }
 
 function createDisc(game) {
-    const disc = game.add.sprite(game.world.centerX, game.world.centerY, 'disc');
+    const disc = game.add.sprite(32, game.world.height * 0.7, 'disc');
     disc.anchor.setTo(0.5, 0.5);
 
     game.physics.arcade.enable([disc]);
@@ -44,14 +45,18 @@ function handleInput(game, sky, water) {
 }
 
 play.create = function create() {
+    this.game.world.setBounds(0, 0, properties.size.x * 30, properties.size.y);
     this.game.stage.backgroundColor = '#eeeeee';
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
     this.game.physics.arcade.gravity.y = 200;
 
     this.water = createWater(this.game, this.game.height);
     this.sky = createSky(this.game, this.water.top);
-
     this.disc = createDisc(this.game);
+
+    this.disc.body.velocity.x = 250;
+
+    this.game.camera.follow(this.disc, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 };
 
 play.update = function update() {
@@ -63,7 +68,9 @@ play.update = function update() {
 
 play.render = function render() {
     const { disc, water, game } = this;
+
     // game.debug.body(disc);
+    // game.debug.bodyInfo(disc, 32, 72);
     // game.debug.body(water);
 };
 
