@@ -28,6 +28,18 @@ function createSky(game, height) {
     return sky;
 }
 
+function handleInput(game, sky, water) {
+    const speed = 3;
+    const key = game.input.keyboard;
+    if (key.isDown(Phaser.Keyboard.LEFT)) {
+        sky.tilePosition.x += speed / 2;
+        water.tilePosition.x += speed;
+    } else if (key.isDown(Phaser.Keyboard.RIGHT)) {
+        sky.tilePosition.x -= speed / 2;
+        water.tilePosition.x -= speed;
+    }
+}
+
 play.create = function create() {
     this.game.stage.backgroundColor = '#eeeeee';
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -40,7 +52,9 @@ play.create = function create() {
 };
 
 play.update = function update() {
-    this.game.physics.arcade.collide(this.disc, this.water);
+    const { disc, water, sky, game } = this;
+    game.physics.arcade.collide(disc, water);
+    handleInput(game, sky, water);
 };
 
 play.render = function render() {
