@@ -31,6 +31,9 @@ boot.create = function create() {
     }
 
     this.game.sound.mute = properties.mute;
+    // enable crisp rendering
+    this.game.renderer.renderSession.roundPixels = true;
+    Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
 
     this.game.state.start('preloader');
 };
