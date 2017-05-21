@@ -1,4 +1,6 @@
+const _ = require('lodash');
 const properties = require('../properties');
+
 const play = {};
 
 function createWater(game, height) {
@@ -35,21 +37,33 @@ function createSky(game, height) {
     return sky;
 }
 
-function makeSplash(game, x, y) {
-    const splash = game.add.sprite(x, y, 'splash', 5);
-    splash.anchor.setTo(0.5, 1);
-    splash.animations.add('up', [1, 2, 3, 4, 5, 6]);
-    splash.animations.add('down', [5, 4, 3, 2, 1]);
+function makeSplash(game, disc) {
+    // Ignore any weird/low speed
+    if (disc.body.velocity.y > 0) {
+        return;
+    }
 
+    // Create the splash sprite below the disc
+    const splash = game.add.sprite(disc.centerX, disc.bottom, 'splash', 5);
+    splash.anchor.setTo(0.5, 1);
+
+    // Adapt animation to disc velocity
+    const lastFrame = _.clamp(1, _.floor(-disc.body.velocity.y / 25), 6);
+    const frameOrder = _.range(0, lastFrame);
+    splash.animations.add('up', frameOrder);
+    splash.animations.add('down', _.reverse(frameOrder));
+
+    // Animation up
     splash.animations.play(
         'up',
         20, // framerate
     ).onComplete.add(() => {
+        // then down
         splash.animations.play(
             'down',
             20,
-            false, // loop
-            true, // killOnComplete
+            false, // no loop
+            true, // kill the sprite on complete
         );
     });
 }
@@ -79,15 +93,14 @@ play.create = function create() {
 play.update = function update() {
     const { disc, water, sky, game } = this;
     game.physics.arcade.collide(disc, water, () => {
-        makeSplash(game, disc.centerX, disc.bottom);
+        makeSplash(game, disc);
     });
 
     handleInput(game, sky, water);
 };
 
 play.render = function render() {
-    const { disc, water, game } = this;
-
+    // const { disc, water, game } = this;
     // game.debug.body(disc);
     // game.debug.bodyInfo(disc, 32, 72);
     // game.debug.body(water);
