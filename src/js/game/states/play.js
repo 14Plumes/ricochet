@@ -32,15 +32,10 @@ function createSky(game, height) {
     return sky;
 }
 
-function handleInput(game, sky, water) {
-    const speed = 3;
+function handleInput(game) {
     const key = game.input.keyboard;
-    if (key.isDown(Phaser.Keyboard.LEFT)) {
-        sky.tilePosition.x += speed / 2;
-        water.tilePosition.x += speed;
-    } else if (key.isDown(Phaser.Keyboard.RIGHT)) {
-        sky.tilePosition.x -= speed / 2;
-        water.tilePosition.x -= speed;
+    if (key.isDown(Phaser.Keyboard.SPACE)) {
+        // TODO
     }
 }
 
