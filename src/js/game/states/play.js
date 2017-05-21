@@ -35,6 +35,25 @@ function createSky(game, height) {
     return sky;
 }
 
+function makeSplash(game, x, y) {
+    const splash = game.add.sprite(x, y, 'splash', 5);
+    splash.anchor.setTo(0.5, 1);
+    splash.animations.add('up', [1, 2, 3, 4, 5, 6]);
+    splash.animations.add('down', [5, 4, 3, 2, 1]);
+
+    splash.animations.play(
+        'up',
+        20, // framerate
+    ).onComplete.add(() => {
+        splash.animations.play(
+            'down',
+            20,
+            false, // loop
+            true, // killOnComplete
+        );
+    });
+}
+
 function handleInput(game) {
     const key = game.input.keyboard;
     if (key.isDown(Phaser.Keyboard.SPACE)) {
@@ -59,7 +78,9 @@ play.create = function create() {
 
 play.update = function update() {
     const { disc, water, sky, game } = this;
-    game.physics.arcade.collide(disc, water);
+    game.physics.arcade.collide(disc, water, () => {
+        makeSplash(game, disc.centerX, disc.bottom);
+    });
 
     handleInput(game, sky, water);
 };
