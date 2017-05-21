@@ -2,7 +2,7 @@ const preloader = {};
 
 preloader.preload = function preload() {
     this.game.load.image('water', 'images/water.png');
-    this.game.load.image('disc', 'images/disc.png');
+    this.game.load.spritesheet('disc', 'images/disc15x10.png', 15, 10, 3);
     this.game.load.image('sky', 'images/sky.png');
 };
 
