@@ -1,6 +1,6 @@
 {
   "ecmaVersion": 6,
-  "libs": ["browser"],
+  "libs": [],
   "loadEagerly": [],
   "dontLoad": [
     "node_modules/**",
@@ -9,7 +9,13 @@
   ],
   "plugins": {
     "doc_comment": true,
-    "es_modules": {},
-    "phaser": {}
+    "phaser": {},
+    "commonjs": {},
+    "modules": {
+      "dontLoad": "",
+      "load": "",
+      "modules": ""
+    },
+    "node_resolve": {}
   }
 }
