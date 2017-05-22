@@ -224,14 +224,14 @@ module.exports = function (grunt) {
     'browserify',
     'jade',
     'stylus',
-    'uglify',
+    // 'uglify',
     'copy:images',
     'copy:audio',
     'copy:phaserArcadeMin',
     'cacheBust',
-    'connect',
-    'open',
-    'watch'
+    // 'connect',
+    // 'open',
+    // 'watch'
   ]);
 
   grunt.registerTask('optimise', ['pngmin', 'copy:images']);

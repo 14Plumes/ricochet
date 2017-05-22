@@ -5,7 +5,8 @@
   "main": "build/js/app.min.js",
   "scripts": {
     "start": "./node_modules/.bin/grunt",
-    "lint": "./node_modules/.bin/eslint ./src/"
+    "lint": "./node_modules/.bin/eslint ./src/",
+    "deploy": "./node_modules/.bin/grunt build && ./node_modules/.bin/gh-pages --dist build/"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
+    "gh-pages": "^1.0.0",
     "grunt": "^1.0.0",
     "grunt-browserify": "^5.0.0",
     "grunt-cache-bust": "^1.1.1",
