@@ -19,7 +19,7 @@ function createWater(game, height) {
 function createDisc(game) {
     const disc = game.add.sprite(32, game.world.height * 0.7, 'disc');
     const anim = disc.animations.add('rotate');
-    anim.play(20, true);
+    anim.play(40, true);
 
     disc.anchor.setTo(0.5, 0.5);
 
