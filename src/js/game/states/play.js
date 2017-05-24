@@ -68,35 +68,58 @@ function makeSplash(game, disc) {
     });
 }
 
-function handleInput(game) {
-    const key = game.input.keyboard;
-    if (key.isDown(Phaser.Keyboard.SPACE)) {
-        // TODO
+function updateCapture({ total, pressed, release }, gap, isPressed) {
+    if (gap > 50) {
+        return { total, pressed, release: !isPressed };
+    } else if (!release) {
+        return { total: total + 1, pressed, release: !isPressed };
     }
+
+    return { total: total + 1, pressed: pressed + (isPressed ? 1 : 0), release: true };
+}
+
+function resetCapture({ release }) {
+    return { total: 1, pressed: 1, release };
 }
 
 play.create = function create() {
     this.game.world.setBounds(0, 0, properties.size.x * 30, properties.size.y);
     this.game.stage.backgroundColor = '#eeeeee';
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
-    this.game.physics.arcade.gravity.y = 200;
+
 
     this.water = createWater(this.game, this.game.height);
     this.sky = createSky(this.game, this.water.top);
     this.disc = createDisc(this.game);
 
     this.disc.body.velocity.x = 250;
+    this.disc.body.gravity.y = 200;
+    this.disc.body.bounce.y = 1.2; // Higher will be less punitive for the player
+    this.disc.falling = true;
 
     this.game.camera.follow(this.disc, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+    this.capture = resetCapture({ release: true });
 };
 
 play.update = function update() {
-    const { disc, water, sky, game } = this;
+    const { disc, water, game } = this;
     game.physics.arcade.collide(disc, water, () => {
         makeSplash(game, disc);
     });
 
-    handleInput(game, sky, water);
+    const gap = Math.max(0, water.body.position.y - disc.body.position.y);
+    const isPressed = game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR);
+    this.capture = updateCapture(this.capture, gap, isPressed);
+
+    if (this.disc.falling && disc.body.velocity.y < 0) { // That's the bounce
+        const ratioPressure = this.capture.pressed / this.capture.total;
+        this.disc.falling = false;
+        this.capture = resetCapture(this.capture);
+        this.disc.body.velocity.y *= ratioPressure;
+    } else if (!this.disc.falling && disc.body.velocity.y >= 0) {
+        this.disc.falling = true;
+    }
 };
 
 play.render = function render() {
