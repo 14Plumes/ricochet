@@ -17142,14 +17142,16 @@ module.exports={
 
 var _ = require('lodash');
 var properties = require('./properties');
-var boot = require('./states/boot.js');
-var preloader = require('./states/preloader.js');
-var play = require('./states/play.js');
+var boot = require('./states/boot');
+var preloader = require('./states/preloader');
+var play = require('./states/play');
+var leaderboard = require('./states/leaderboard');
 
 var states = {
     boot: boot,
     preloader: preloader,
-    play: play
+    play: play,
+    leaderboard: leaderboard
 };
 
 var gameInstance = new Phaser.Game(properties.size.x, properties.size.y, Phaser.AUTO, 'game');
@@ -17161,7 +17163,7 @@ _.each(states, function (state, key) {
 
 gameInstance.state.start('boot');
 
-},{"./properties":4,"./states/boot.js":5,"./states/play.js":6,"./states/preloader.js":7,"lodash":1}],4:[function(require,module,exports){
+},{"./properties":4,"./states/boot":5,"./states/leaderboard":6,"./states/play":7,"./states/preloader":8,"lodash":1}],4:[function(require,module,exports){
 'use strict';
 
 var npmProperties = require('../../../package.json');
@@ -17228,7 +17230,29 @@ boot.create = function create() {
 
 module.exports = boot;
 
-},{"../../lib/stats.min":8,"../properties":4}],6:[function(require,module,exports){
+},{"../../lib/stats.min":9,"../properties":4}],6:[function(require,module,exports){
+'use strict';
+
+var properties = require('../properties');
+
+var leaderboard = {};
+
+leaderboard.create = function create() {
+    var text = this.game.add.text(properties.size.x / 2, properties.size.y / 2, 'Bloup!');
+    text.anchor.setTo(0.5, 0.5);
+};
+
+leaderboard.update = function update() {
+    // Empty
+};
+
+leaderboard.render = function render() {
+    // Empty
+};
+
+module.exports = leaderboard;
+
+},{"../properties":4}],7:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -17250,15 +17274,18 @@ function createWater(game, height) {
 }
 
 function createDisc(game) {
-    var disc = game.add.sprite(32, game.world.height * 0.7, 'disc');
+    var disc = game.add.sprite(32, game.world.height * 0.5, 'disc');
     var anim = disc.animations.add('rotate');
-    anim.play(20, true);
+    anim.play(40, true);
 
     disc.anchor.setTo(0.5, 0.5);
 
     game.physics.arcade.enable([disc]);
-    disc.body.bounce.y = 0.95;
     disc.body.collideWorldBounds = true;
+    disc.body.velocity.x = 250;
+    disc.body.gravity.y = 200;
+    disc.body.bounce.y = 1; // Higher will be less punitive for the player
+    disc.body.maxVelocity.y = 250;
 
     return disc;
 }
@@ -17294,58 +17321,87 @@ function makeSplash(game, disc) {
     });
 }
 
-function handleInput(game) {
-    var key = game.input.keyboard;
-    if (key.isDown(Phaser.Keyboard.SPACE)) {
-        // TODO
-    }
+function Bouncer() {
+    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { actor: null, lower: 2, upper: 10 };
+
+    Object.assign(this, opts);
+    this.frame = 0;
+    this.pressedAt = 0;
 }
+
+Bouncer.prototype = {
+    bounce: function bounce() {
+        var distance = this.frame - this.pressedAt;
+
+        if (distance > this.upper) {
+            this.actor.kill();
+        } else if (distance < this.lower) {
+            this.actor.body.velocity.y *= Math.sqrt(1 + this.lower / this.upper);
+        } else {
+            this.actor.body.velocity.y *= distance / this.upper;
+        }
+    },
+    update: function update(trigger) {
+        this.frame += 1;
+        this.pressedAt = trigger ? this.frame : this.pressedAt;
+    }
+};
 
 play.create = function create() {
     this.game.world.setBounds(0, 0, properties.size.x * 30, properties.size.y);
     this.game.stage.backgroundColor = '#eeeeee';
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
-    this.game.physics.arcade.gravity.y = 200;
 
     this.water = createWater(this.game, this.game.height);
     this.sky = createSky(this.game, this.water.top);
     this.disc = createDisc(this.game);
 
-    this.disc.body.velocity.x = 250;
-
     this.game.camera.follow(this.disc, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+    this.bouncer = new Bouncer({
+        actor: this.disc,
+        lower: 2,
+        upper: 10
+    });
 };
 
 play.update = function update() {
+    var _this = this;
+
     var disc = this.disc,
         water = this.water,
-        sky = this.sky,
         game = this.game;
+
+
+    this.bouncer.update(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR));
 
     game.physics.arcade.collide(disc, water, function () {
         makeSplash(game, disc);
+        _this.bouncer.bounce();
     });
 
-    handleInput(game, sky, water);
+    if (!disc.alive) {
+        setTimeout(function () {
+            _this.game.state.clearCurrentState();
+            _this.game.state.restart();
+        }, 750);
+    }
 };
 
 play.render = function render() {
-    // const { disc, water, game } = this;
-    // game.debug.body(disc);
-    // game.debug.bodyInfo(disc, 32, 72);
-    // game.debug.body(water);
+    // Empty
 };
 
 module.exports = play;
 
-},{"../properties":4,"lodash":1}],7:[function(require,module,exports){
+},{"../properties":4,"lodash":1}],8:[function(require,module,exports){
 'use strict';
 
 var preloader = {};
 
 preloader.preload = function preload() {
     this.game.load.image('water', './images/water.png');
-    this.game.load.spritesheet('disc', './images/disc15x10.png', 15, 10, 3);
+    this.game.load.spritesheet('disc', './images/disc15x10.png', 15, 10, 6);
     this.game.load.spritesheet('splash', './images/splash19x32.png', 19, 32, 6);
     this.game.load.image('sky', './images/sky.png');
 };
@@ -17356,7 +17412,7 @@ preloader.create = function create() {
 
 module.exports = preloader;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (global){
 'use strict';
 
