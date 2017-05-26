@@ -84,11 +84,7 @@ play.create = function create() {
 
     this.game.camera.follow(this.disc, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
-    this.bouncer = Bouncer.create({
-        actor: this.disc,
-        lower: 2,
-        upper: 10,
-    });
+    this.bouncer = Bouncer.create({ actor: this.disc });
 };
 
 play.update = function update() {
@@ -96,13 +92,15 @@ play.update = function update() {
 
     this.bouncer.update(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR));
 
-    game.physics.arcade.collide(disc, water, () => {
+    const didCollide = game.physics.arcade.collide(disc, water);
+    if (didCollide) {
         makeSplash(game, disc);
         this.bouncer.bounce();
-    });
+    }
 
-    if (!disc.alive) {
-        setTimeout(() => {
+    if (!disc.alive && !this.restartTimeout) {
+        this.restartTimeout = setTimeout(() => {
+            this.restartTimeout = undefined;
             this.game.state.clearCurrentState();
             this.game.state.restart();
         }, 750);

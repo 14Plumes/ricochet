@@ -1,7 +1,7 @@
 function Bouncer(opts) {
     const {
         actor = null,
-        lower = 2,
+        lower = 1,
         upper = 10,
     } = opts;
 
@@ -31,7 +31,9 @@ Bouncer.prototype = {
 
     update(trigger) {
         this.frame += 1;
-        this.pressedAt = trigger ? this.frame : this.pressedAt;
+        if (trigger) {
+            this.pressedAt = this.frame;
+        }
     },
 };
 
