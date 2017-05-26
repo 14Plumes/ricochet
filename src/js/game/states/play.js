@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const properties = require('../properties');
+const Bouncer = require('./Bouncer');
 
 const play = {};
 
@@ -71,31 +72,6 @@ function makeSplash(game, disc) {
     });
 }
 
-function Bouncer(opts = { actor: null, lower: 2, upper: 10 }) {
-    Object.assign(this, opts);
-    this.frame = 0;
-    this.pressedAt = 0;
-}
-
-Bouncer.prototype = {
-    bounce() {
-        const distance = this.frame - this.pressedAt;
-
-        if (distance > this.upper) {
-            this.actor.kill();
-        } else if (distance < this.lower) {
-            this.actor.body.velocity.y *= Math.sqrt(1 + (this.lower / this.upper));
-        } else {
-            this.actor.body.velocity.y *= distance / this.upper;
-        }
-    },
-
-    update(trigger) {
-        this.frame += 1;
-        this.pressedAt = trigger ? this.frame : this.pressedAt;
-    },
-};
-
 play.create = function create() {
     this.game.world.setBounds(0, 0, properties.size.x * 30, properties.size.y);
     this.game.stage.backgroundColor = '#eeeeee';
@@ -108,7 +84,7 @@ play.create = function create() {
 
     this.game.camera.follow(this.disc, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
-    this.bouncer = new Bouncer({
+    this.bouncer = Bouncer.create({
         actor: this.disc,
         lower: 2,
         upper: 10,
