@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const properties = require('../properties');
-const Bouncer = require('./Bouncer');
+const Bouncer = require('../objects/Bouncer');
 
 const play = {};
 
@@ -30,6 +30,7 @@ function createDisc(game) {
     disc.body.gravity.y = 200;
     disc.body.bounce.y = 1; // Higher will be less punitive for the player
     disc.body.maxVelocity.y = 250;
+    disc.body.maxVelocity.x = 750;
 
     return disc;
 }
@@ -48,7 +49,7 @@ function makeSplash(game, disc) {
     }
 
     // Create the splash sprite below the disc
-    const splash = game.add.sprite(disc.centerX, disc.bottom, 'splash', 5);
+    const splash = game.add.sprite(disc.body.position.x + 24, disc.bottom, 'splash', 5);
     splash.anchor.setTo(0.5, 1);
 
     // Adapt animation to disc velocity

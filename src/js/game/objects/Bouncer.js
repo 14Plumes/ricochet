@@ -79,6 +79,7 @@ Bouncer.prototype = {
         }
 
         this.actor.body.velocity.y *= multiplier;
+        this.actor.body.velocity.x *= 1.05;
     },
 
     killIfNeeded() {
