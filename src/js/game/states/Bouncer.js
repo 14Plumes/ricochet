@@ -6,9 +6,9 @@ function Bouncer(opts) {
         actor: null,
         timings: {
             // TODO adjust the default timings
-            perfect: 2,
-            good: 4,
-            poor: 10,
+            perfect: 0,
+            good: 2,
+            poor: 5,
         },
     }, opts);
 
@@ -36,18 +36,19 @@ Bouncer.prototype = {
     update(trigger, bounced) {
         this.frame += 1;
 
-        // Disable while the actor is bouncing up
-        if (!this.didBounce && this.actor.body.velocity.y >= 0) {
-            return;
-        }
-
         // Register trigger and bounce events
         if (bounced && !this.didBounce) {
             this.didBounce = true;
             this.bouncedAt = this.frame;
         }
 
-        if (!this.didTrigger && (
+        // Ignore input right after the actor bounce was resolved
+        const ignoreInput = !this.didBounce && this.actor.body.velocity.y <= 0;
+        // if (ignoreInput && trigger) {
+        //     console.log('Ignore input');
+        // }
+
+        if (!ignoreInput && !this.didTrigger && (
             trigger || this.timedOut() // automatically trigger after timeout
         )) {
             this.didTrigger = true;
@@ -65,10 +66,8 @@ Bouncer.prototype = {
     adjustBounce() {
         const { perfect, good, poor } = this.timings;
         const distance = Math.abs(this.bouncedAt - this.triggeredAt);
-        console.log('distance', distance);
 
         let multiplier;
-
         if (distance <= perfect) {
             multiplier = 1.2;
         } else if (distance <= good) {
