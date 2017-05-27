@@ -19,18 +19,11 @@ function createWater(game, height) {
 }
 
 function createDisc(game) {
-    const shadow = Shadow.create(game, {
-        color: 0x11367a,
-        ground: game.height - 64,
-        max_height: game.height,
-        size: 16,
-    });
     const disc = game.add.sprite(32, game.world.height * 0.5, 'disc');
     const anim = disc.animations.add('rotate');
     anim.play(40, true);
 
     disc.anchor.setTo(0.5, 0.5);
-    disc.shadow = shadow.attachTo(disc);
 
     game.physics.arcade.enable([disc]);
     disc.body.collideWorldBounds = true;
@@ -41,6 +34,15 @@ function createDisc(game) {
     disc.body.maxVelocity.x = 750;
 
     return disc;
+}
+
+function createShadow(game) {
+    return Shadow.create(game, {
+        color: 0x11367a,
+        ground: game.height - 64,
+        max_height: game.height,
+        size: 16,
+    });
 }
 
 function createSky(game, height) {
@@ -86,10 +88,12 @@ play.create = function create() {
     this.game.stage.backgroundColor = '#eeeeee';
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
-
     this.water = createWater(this.game, this.game.height);
     this.sky = createSky(this.game, this.water.top);
+
+    const shadow = createShadow(this.game); // NOTE Disc has to be created after shadow (or help find a way to play with the z-indexes ^.^)
     this.disc = createDisc(this.game);
+    this.disc.shadow = shadow.attachTo(this.disc);
 
     this.game.camera.follow(this.disc, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
