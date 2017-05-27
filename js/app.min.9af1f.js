@@ -17142,16 +17142,14 @@ module.exports={
 
 var _ = require('lodash');
 var properties = require('./properties');
-var boot = require('./states/boot');
-var preloader = require('./states/preloader');
-var play = require('./states/play');
-var leaderboard = require('./states/leaderboard');
+var boot = require('./states/boot.js');
+var preloader = require('./states/preloader.js');
+var play = require('./states/play.js');
 
 var states = {
     boot: boot,
     preloader: preloader,
-    play: play,
-    leaderboard: leaderboard
+    play: play
 };
 
 var gameInstance = new Phaser.Game(properties.size.x, properties.size.y, Phaser.AUTO, 'game');
@@ -17163,7 +17161,7 @@ _.each(states, function (state, key) {
 
 gameInstance.state.start('boot');
 
-},{"./properties":4,"./states/boot":5,"./states/leaderboard":6,"./states/play":7,"./states/preloader":8,"lodash":1}],4:[function(require,module,exports){
+},{"./properties":4,"./states/boot.js":6,"./states/play.js":7,"./states/preloader.js":8,"lodash":1}],4:[function(require,module,exports){
 'use strict';
 
 var npmProperties = require('../../../package.json');
@@ -17182,6 +17180,110 @@ module.exports = {
 };
 
 },{"../../../package.json":2}],5:[function(require,module,exports){
+"use strict";
+
+/**
+ * A Bouncer handles the player's controls on an object's bounce
+ */
+function Bouncer(opts) {
+    Object.assign(this, {
+        actor: null,
+        timings: {
+            // TODO adjust the default timings
+            perfect: 0,
+            good: 2,
+            poor: 5
+        }
+    }, opts);
+
+    this.reset();
+}
+
+Bouncer.create = function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+    }
+
+    return new (Function.prototype.bind.apply(Bouncer, [null].concat(args)))();
+};
+
+Bouncer.prototype = {
+    reset: function reset() {
+        Object.assign(this, {
+            frame: 0,
+            didBounce: false,
+            bouncedAt: 0,
+            didTrigger: false,
+            triggeredAt: 0
+        });
+    },
+
+
+    // True if too much time elapsed after the bounce
+    timedOut: function timedOut() {
+        return this.didBounce && this.frame - this.bouncedAt > this.timings.poor;
+    },
+    update: function update(trigger, bounced) {
+        this.frame += 1;
+
+        // Register trigger and bounce events
+        if (bounced && !this.didBounce) {
+            this.didBounce = true;
+            this.bouncedAt = this.frame;
+        }
+
+        // Ignore input right after the actor bounce was resolved
+        var ignoreInput = !this.didBounce && this.actor.body.velocity.y <= 0;
+        // if (ignoreInput && trigger) {
+        //     console.log('Ignore input');
+        // }
+
+        if (!ignoreInput && !this.didTrigger && (trigger || this.timedOut() // automatically trigger after timeout
+        )) {
+            this.didTrigger = true;
+            this.triggeredAt = this.frame;
+        }
+
+        // Once both happened we can resolve the actor's new speed
+        if (this.didTrigger && this.didBounce) {
+            this.adjustBounce();
+            this.killIfNeeded();
+            this.reset();
+        }
+    },
+    adjustBounce: function adjustBounce() {
+        var _timings = this.timings,
+            perfect = _timings.perfect,
+            good = _timings.good,
+            poor = _timings.poor;
+
+        var distance = Math.abs(this.bouncedAt - this.triggeredAt);
+
+        var multiplier = void 0;
+        if (distance <= perfect) {
+            multiplier = 1.2;
+        } else if (distance <= good) {
+            multiplier = 1;
+        } else if (distance <= poor) {
+            multiplier = 0.8;
+        } else {
+            multiplier = 0.5;
+        }
+
+        this.actor.body.velocity.y *= multiplier;
+    },
+    killIfNeeded: function killIfNeeded() {
+        var actor = this.actor;
+
+        if (Math.abs(actor.body.velocity.y) < 50) {
+            actor.kill();
+        }
+    }
+};
+
+module.exports = Bouncer;
+
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var Stats = require('../../lib/stats.min');
@@ -17230,33 +17332,12 @@ boot.create = function create() {
 
 module.exports = boot;
 
-},{"../../lib/stats.min":9,"../properties":4}],6:[function(require,module,exports){
-'use strict';
-
-var properties = require('../properties');
-
-var leaderboard = {};
-
-leaderboard.create = function create() {
-    var text = this.game.add.text(properties.size.x / 2, properties.size.y / 2, 'Bloup!');
-    text.anchor.setTo(0.5, 0.5);
-};
-
-leaderboard.update = function update() {
-    // Empty
-};
-
-leaderboard.render = function render() {
-    // Empty
-};
-
-module.exports = leaderboard;
-
-},{"../properties":4}],7:[function(require,module,exports){
+},{"../../lib/stats.min":9,"../properties":4}],7:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
 var properties = require('../properties');
+var Bouncer = require('./Bouncer');
 
 var play = {};
 
@@ -17321,32 +17402,6 @@ function makeSplash(game, disc) {
     });
 }
 
-function Bouncer() {
-    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { actor: null, lower: 2, upper: 10 };
-
-    Object.assign(this, opts);
-    this.frame = 0;
-    this.pressedAt = 0;
-}
-
-Bouncer.prototype = {
-    bounce: function bounce() {
-        var distance = this.frame - this.pressedAt;
-
-        if (distance > this.upper) {
-            this.actor.kill();
-        } else if (distance < this.lower) {
-            this.actor.body.velocity.y *= Math.sqrt(1 + this.lower / this.upper);
-        } else {
-            this.actor.body.velocity.y *= distance / this.upper;
-        }
-    },
-    update: function update(trigger) {
-        this.frame += 1;
-        this.pressedAt = trigger ? this.frame : this.pressedAt;
-    }
-};
-
 play.create = function create() {
     this.game.world.setBounds(0, 0, properties.size.x * 30, properties.size.y);
     this.game.stage.backgroundColor = '#eeeeee';
@@ -17358,11 +17413,7 @@ play.create = function create() {
 
     this.game.camera.follow(this.disc, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
-    this.bouncer = new Bouncer({
-        actor: this.disc,
-        lower: 2,
-        upper: 10
-    });
+    this.bouncer = Bouncer.create({ actor: this.disc });
 };
 
 play.update = function update() {
@@ -17373,18 +17424,22 @@ play.update = function update() {
         game = this.game;
 
 
-    this.bouncer.update(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR));
+    if (disc.alive) {
+        // Handle bounce
+        var didCollide = game.physics.arcade.collide(disc, water);
+        if (didCollide) {
+            makeSplash(game, disc);
+        }
+        this.bouncer.update(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR), didCollide);
 
-    game.physics.arcade.collide(disc, water, function () {
-        makeSplash(game, disc);
-        _this.bouncer.bounce();
-    });
-
-    if (!disc.alive) {
-        setTimeout(function () {
-            _this.game.state.clearCurrentState();
-            _this.game.state.restart();
-        }, 750);
+        // The disc was too slow and killed
+        if (!disc.alive) {
+            // Reset the game later
+            setTimeout(function () {
+                _this.game.state.clearCurrentState();
+                _this.game.state.restart();
+            }, 750);
+        }
     }
 };
 
@@ -17394,7 +17449,7 @@ play.render = function render() {
 
 module.exports = play;
 
-},{"../properties":4,"lodash":1}],8:[function(require,module,exports){
+},{"../properties":4,"./Bouncer":5,"lodash":1}],8:[function(require,module,exports){
 'use strict';
 
 var preloader = {};
