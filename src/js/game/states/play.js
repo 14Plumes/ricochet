@@ -90,20 +90,22 @@ play.create = function create() {
 play.update = function update() {
     const { disc, water, game } = this;
 
-    this.bouncer.update(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR));
+    if (disc.alive) {
+        // Handle bounce
+        const didCollide = game.physics.arcade.collide(disc, water);
+        if (didCollide) {
+            makeSplash(game, disc);
+        }
+        this.bouncer.update(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR), didCollide);
 
-    const didCollide = game.physics.arcade.collide(disc, water);
-    if (didCollide) {
-        makeSplash(game, disc);
-        this.bouncer.bounce();
-    }
-
-    if (!disc.alive && !this.restartTimeout) {
-        this.restartTimeout = setTimeout(() => {
-            this.restartTimeout = undefined;
-            this.game.state.clearCurrentState();
-            this.game.state.restart();
-        }, 750);
+        // The disc was too slow and killed
+        if (!disc.alive) {
+            // Reset the game later
+            setTimeout(() => {
+                this.game.state.clearCurrentState();
+                this.game.state.restart();
+            }, 750);
+        }
     }
 };
 
