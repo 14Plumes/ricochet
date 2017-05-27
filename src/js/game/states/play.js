@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const properties = require('../properties');
 const Bouncer = require('../objects/Bouncer');
+const Shadow = require('../objects/Shadow');
 
 const play = {};
 
@@ -18,11 +19,17 @@ function createWater(game, height) {
 }
 
 function createDisc(game) {
+    const shadow = Shadow.create(game, {
+        color: 0x11367a,
+        ground: game.height - 64,
+        max_height: game.height,
+    });
     const disc = game.add.sprite(32, game.world.height * 0.5, 'disc');
     const anim = disc.animations.add('rotate');
     anim.play(40, true);
 
     disc.anchor.setTo(0.5, 0.5);
+    disc.shadow = shadow.attachTo(disc);
 
     game.physics.arcade.enable([disc]);
     disc.body.collideWorldBounds = true;
@@ -90,6 +97,8 @@ play.create = function create() {
 
 play.update = function update() {
     const { disc, water, game } = this;
+
+    disc.shadow.update();
 
     if (disc.alive) {
         // Handle bounce
