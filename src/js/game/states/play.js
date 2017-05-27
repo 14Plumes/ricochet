@@ -23,6 +23,7 @@ function createDisc(game) {
         color: 0x11367a,
         ground: game.height - 64,
         max_height: game.height,
+        size: 16,
     });
     const disc = game.add.sprite(32, game.world.height * 0.5, 'disc');
     const anim = disc.animations.add('rotate');

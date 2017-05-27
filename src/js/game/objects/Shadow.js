@@ -6,12 +6,11 @@ function Shadow(game, opts) {
         color: 0x000000,
         ground: 0,
         max_height: 0,
+        size: 0,
     }, opts);
 
     this.graphics = game.add.graphics(0, this.ground);
-    this.graphics.beginFill(this.color);
-    this.graphics.drawCircle(8, -32, 16);
-    this.graphics.endFill();
+    this.graphics.visible = false;
 }
 
 Shadow.create = (game, args) => new Shadow(game, args);
@@ -19,10 +18,19 @@ Shadow.create = (game, args) => new Shadow(game, args);
 Shadow.prototype = {
     attachTo(actor) {
         this.actor = actor;
+        this.graphics.beginFill(this.color);
+        this.graphics.drawCircle(this.size / 2, -(this.size + actor.height), this.size);
+        this.graphics.endFill();
+        this.graphics.visible = this.actor.alive;
         return this;
     },
 
     update() {
+        if (!this.actor.alive) {
+            this.graphics.kill();
+            return;
+        }
+
         const gap = Math.abs(this.ground - this.actor.body.position.y);
         const factor = 1 - (gap / this.max_height);
         this.graphics.position.x = this.actor.body.position.x;
