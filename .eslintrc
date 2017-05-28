@@ -2,7 +2,7 @@
     "extends": "airbnb",
     "globals": {
         "Phaser": true,
-        "document":
+        "document": true
     },
     "env": {
         "browser": true
